@@ -12,12 +12,13 @@ You can delete or modify command and command example
 Tables:
 
 |  commands  |
+
 | id  | name |
 
 |  examples  |
 | id | cmd_id | example | comment |
 
-3) show all ordered list of commands (if no one is specified)
+
 4) delete command 
 5) search commands and search keywords in comments
 
@@ -34,6 +35,6 @@ add mkdir /home/<user>/.memory in installation file
 new functionality) TODO table
 |  todos  |
 
-some links:
 
+some links:
 https://stackoverflow.com/questions/31146713/sqlite3-exec-callback-function-clarification

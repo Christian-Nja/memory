@@ -1,13 +1,13 @@
 #include <string.h>
 #include <argp.h>
-#include <memoryConfig.h>
 /***
  ***    ARGUMENTS           used by main to communicate
  ***                        with parse_opt
  ***/
 struct arguments
 {
-    char *args[1]; /* db | new | show <command> */
+    int id;
+    char *args[1]; /* db | new | show | delete */
 };
 
 /*******
@@ -53,7 +53,7 @@ static char args_doc[] = "db\t\t\t\tinitialize the db in ~/.memory folder\n"
  ***                        print by --help
  ***/
 static struct argp_option options[] = {
-    {0}};
+    {"id", 'i', "ID", 0, "specify a command id or comment id for given command"}, {0}};
 
 /***
  ***    OPTION PARSING FUNCTION

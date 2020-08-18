@@ -41,3 +41,8 @@ int initialize_db();
  * Show informations about a COMMAND
  * */
 int show(int argc, char *command);
+
+/**
+ * Delete a COMMAND and all related examples or delete example by ID for given COMMAND
+ * */
+int cancel(int argc, char *command, int example_id);

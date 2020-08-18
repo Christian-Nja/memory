@@ -295,6 +295,26 @@ int show(int argc, char *command)
 }
 
 /**
+ * Delete a COMMAND and all related examples or delete example by ID for given COMMAND
+ * */
+int cancel(int argc, char *command, int example_id)
+{
+    if (argc == 2)
+    {
+        printf("Specify a COMMAND to delete and optionally a -i ID for the example\n");
+        return EXIT_SUCCESS;
+    }
+    if (example_id == NULL)
+    {
+        printf("[*] Deleting command and all examples: %s", command);
+    }
+    else
+    {
+        printf("[*] Deleting example number %d for command %s", example_id, command);
+    }
+}
+
+/**
  * In the main this functions starts the logic to initialize the database for commands
  **/
 int initialize_db()

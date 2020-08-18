@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
 {
     struct arguments arguments;
 
+    // default arguments
+    arguments.id = NULL;
+
     /***
      ***    ARGP PARSER
      ***/
@@ -55,9 +58,15 @@ int main(int argc, char *argv[])
     {
         return show(argc, arguments.args[1]);
     }
+    else if (strcmp(arguments.args[0], DELETE) == 0)
+    {
+        return cancel(argc, arguments.args[1], arguments.id);
+    }
+
     else
     {
         printf("Invalid arguments\n");
+        return EXIT_SUCCESS;
     }
 
     /* switch with string (arguments.args[0]) 
@@ -75,7 +84,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
     struct arguments *arguments = state->input;
     switch (key)
     {
-
+    case 'i':
+        arguments->id = atoi(key);
+        break;
     case ARGP_KEY_ARG:
         if (state->arg_num > 1)
             /* Too many arguments. */
@@ -83,7 +94,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
         arguments->args[state->arg_num] = arg;
 
         break;
-
     case ARGP_KEY_END:
         if (state->arg_num < 1)
             /* Not enough arguments. */
