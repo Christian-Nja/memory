@@ -44,8 +44,9 @@ const char doc[] =
  ***    ARGS DOC            a description for the argument accepted
  ***/
 static char args_doc[] = "db\t\t\t\tinitialize the db in ~/.memory folder\n"
-			 "new <COMMAND>\t\t\tmemorize an example for the command\n"
-			 "show <COMMAND>\t\tshow usage examples for the command";
+                         "new <COMMAND>\t\t\tmemorize an example for the command\n"
+                         "show\t\t\t\tshow all the commands\n"
+                         "show <COMMAND>\t\tshow usage examples for the command";
 
 /***
  ***    OPTIONS             doc for option

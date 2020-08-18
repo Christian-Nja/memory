@@ -10,6 +10,13 @@
 
 #include "memory.h"
 #include "argparsing.h"
+#include "db.h"
+
+/*** commands ***/
+const char *DBI = "db";
+const char *NEW = "new";
+const char *SHOW = "show";
+const char *DELETE = "delete";
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +34,7 @@ int main(int argc, char *argv[])
 
     if (strcmp(arguments.args[0], DBI) == 0)
     {
-        initialize_db();
+        return initialize_db();
     }
     else if (strcmp(arguments.args[0], NEW) == 0)
     {
@@ -37,16 +44,16 @@ int main(int argc, char *argv[])
         {
             printf("Command name: ");
             gets(command);
-            new_command(argc, command);
+            return new_command(argc, command);
         }
         else
         {
-            new_command(argc, arguments.args[1]);
+            return new_command(argc, arguments.args[1]);
         }
     }
     else if (strcmp(arguments.args[0], SHOW) == 0)
     {
-        show(argc, arguments.args[1]);
+        return show(argc, arguments.args[1]);
     }
     else
     {

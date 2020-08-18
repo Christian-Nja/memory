@@ -38,7 +38,7 @@ install(TARGETS memory DESTINATION /usr/bin)
 install(FILES "${PROJECT_BINARY_DIR}/memoryConfig.h"
 	DESTINATION include
 	)
-
+				
 include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 set(CPACK_PACKAGE_VERSION_MAJOR "${memory_VERSION_MAJOR}")

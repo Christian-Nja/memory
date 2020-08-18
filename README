@@ -17,7 +17,6 @@ Tables:
 |  examples  |
 | id | cmd_id | example | comment |
 
-2) add git init
 3) show all ordered list of commands (if no one is specified)
 4) delete command 
 5) search commands and search keywords in comments

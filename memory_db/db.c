@@ -251,14 +251,45 @@ int select_all_examples(char *command)
 }
 
 /**
+ * Returns ordered list of memorized commands 
+ * */
+int select_all_commands()
+{
+    open_db_connection();
+
+    // prepare stmt
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(DB, "SELECT name FROM commands ORDER BY name ASC;", -1, &stmt, 0);
+    if (rc != SQLITE_OK)
+    {
+        prepare_db_error();
+    }
+
+    // run sql and iterate through results
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        const unsigned char *command = sqlite3_column_text(stmt, 0);
+        printf("%s\t\t\n", command);
+    }
+
+    if (rc != SQLITE_DONE)
+    {
+        printf("error: %s", sqlite3_errmsg(DB));
+    }
+    sqlite3_finalize(stmt);
+
+    sqlite3_close(DB);
+    return EXIT_SUCCESS;
+}
+
+/**
  * Show informations about a COMMAND
  * */
 int show(int argc, char *command)
 {
     if (argc == 2)
     {
-        exit(EXIT_FAILURE);
-        //select_all_commands(db);
+        return select_all_commands();
     }
     return select_all_examples(command);
 }

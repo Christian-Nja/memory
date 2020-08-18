@@ -22,6 +22,11 @@ int insert_example(char *example, char *comment, int command_id);
 int select_all_examples(char *command);
 
 /**
+ * Returns ordered list of memorized commands 
+ * */
+int select_all_commands();
+
+/**
  * In the main this function begins the logic to add a new command into memory commands db.
  * It prompts user for a command, example and comment
  * */
