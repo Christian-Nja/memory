@@ -1,14 +1,5 @@
 #include <string.h>
 #include <argp.h>
-/***
- ***    ARGUMENTS           used by main to communicate
- ***                        with parse_opt
- ***/
-struct arguments
-{
-    int id;
-    char *args[1]; /* db | new | show | delete */
-};
 
 /*******
  *
@@ -38,7 +29,7 @@ const char *argp_program_bug_address =
  ***    DOCUMENTATION       print by --help
  ***/
 const char doc[] =
-    "A program to memorize command usage examples and to fast retrieve information about a command";
+    "\nA program to memorize command usage examples and to fast retrieve information about a command";
 
 /***
  ***    ARGS DOC            a description for the argument accepted
@@ -46,14 +37,26 @@ const char doc[] =
 static char args_doc[] = "db\t\t\t\tinitialize the db in ~/.memory folder\n"
                          "new <COMMAND>\t\t\tmemorize an example for the command\n"
                          "show\t\t\t\tshow all the commands\n"
-                         "show <COMMAND>\t\tshow usage examples for the command";
+                         "show <COMMAND>\t\tshow usage examples for the command\n"
+                         "delete <COMMAND>\t\tdelete command and all examples\n"
+                         "delete <COMMAND> -i <ID>\tdelete example for command";
 
 /***
  ***    OPTIONS             doc for option
  ***                        print by --help
  ***/
 static struct argp_option options[] = {
-    {"id", 'i', "ID", 0, "specify a command id or comment id for given command"}, {0}};
+    {"id", 'i', "ID", 0, "specify a command id or example id"}, {0}};
+
+/***
+ ***    ARGUMENTS           used by main to communicate
+ ***                        with parse_opt
+ ***/
+struct arguments
+{
+    int id;
+    char *args[1]; /* db | new | show | delete */
+};
 
 /***
  ***    OPTION PARSING FUNCTION

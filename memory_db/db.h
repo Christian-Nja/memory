@@ -1,5 +1,7 @@
 #include <sqlite3.h>
 
+#define COMMAND_NOT_FOUND -1
+
 /**
  * Create tables for local sqlite db
  * */

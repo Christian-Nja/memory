@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 #include <string.h>
+#include "db.h"
 
 /*** PATH TO DB ***/
 const char *DB_PATH = "/home/linux/.memory/commands.db";
@@ -102,16 +103,11 @@ int create_db_tables()
 }
 
 /**
- * Inserts COMMAND into local db if not exists
- * returns row ID of the COMMAND 
- **/
-int insert_command(char *command)
+ * Returns command id for COMMAND
+ * connection to the db must be already open
+ * */
+int get_command_id_by_name(char *command)
 {
-    // open connection
-    open_db_connection();
-
-    // try to get the command from the db commands table
-    // prepare stmt
     sqlite3_stmt *stmt;
     int rc = sqlite3_prepare_v2(DB, "SELECT id FROM commands WHERE name=?1 ;", -1, &stmt, 0);
     if (rc != SQLITE_OK)
@@ -130,8 +126,32 @@ int insert_command(char *command)
         int command_id = sqlite3_column_int(stmt, 0);
 
         sqlite3_finalize(stmt);
-        sqlite3_close(DB);
 
+        return command_id;
+    }
+    else
+    {
+        return COMMAND_NOT_FOUND;
+    }
+}
+
+/**
+ * Inserts COMMAND into local db if not exists
+ * returns row ID of the COMMAND 
+ **/
+int insert_command(char *command)
+{
+    int command_id;
+    // open connection
+    open_db_connection();
+
+    // try to get the command id from the db commands table if it already exists
+    command_id = get_command_id_by_name(command);
+
+    if (command_id != COMMAND_NOT_FOUND)
+    {
+        //close db
+        sqlite3_close(DB);
         return command_id;
     }
 
@@ -140,7 +160,7 @@ int insert_command(char *command)
     char *sql_command = sqlite3_mprintf("INSERT INTO commands(name) VALUES ('%q');", command);
 
     // create command
-    rc = sqlite3_exec(DB, sql_command, 0, 0, &err_msg);
+    int rc = sqlite3_exec(DB, sql_command, 0, 0, &err_msg);
     if (rc != SQLITE_OK)
     {
         exec_db_error(err_msg);
@@ -183,26 +203,6 @@ int insert_example(char *example, char *comment, int command_id)
     sqlite3_finalize(stmt);
     sqlite3_close(DB);
     return EXIT_SUCCESS;
-}
-
-/**
- * In the main this function starts the logic to add a new command into memory commands db.
- * It prompts user for a command, example and comment
- * */
-int new_command(int argc, char *command)
-{
-    char example[200];
-    char comment[200];
-
-    int command_id = insert_command(command);
-
-    printf("Command line usage example: ");
-    gets(example);
-
-    printf("Comment: ");
-    gets(comment);
-
-    return insert_example(example, comment, command_id);
 }
 
 /**
@@ -283,6 +283,90 @@ int select_all_commands()
 }
 
 /**
+ * Deletes COMMAND and all examples for the given command
+ * */
+int delete_command(char *command)
+{
+    int command_id;
+
+    open_db_connection();
+
+    command_id = get_command_id_by_name(command);
+    if (command_id == COMMAND_NOT_FOUND)
+    {
+        printf("[!] There's no command for given name: %s\n", command);
+        sqlite3_close(DB);
+        return EXIT_FAILURE;
+    }
+
+    char *err_msg = 0;
+    char *sql_command = sqlite3_mprintf("BEGIN TRANSACTION; "
+                                        "DELETE FROM examples WHERE command_id = %d ;"
+                                        "DELETE FROM commands WHERE name = '%s';"
+                                        "COMMIT;",
+                                        command_id, command);
+
+    // create command
+    int rc = sqlite3_exec(DB, sql_command, 0, 0, &err_msg);
+    if (rc != SQLITE_OK)
+    {
+        exec_db_error(err_msg);
+    }
+    sqlite3_close(DB);
+    printf("[*] Succesfully deleted: %s\n", command);
+    return EXIT_SUCCESS;
+}
+
+/**
+ * Deletes example with EXAMPLE_ID for COMMAND
+ * */
+int delete_command_example(char *command, int example_id)
+{
+    open_db_connection();
+
+    int command_id = get_command_id_by_name(command);
+    if (command_id == COMMAND_NOT_FOUND)
+    {
+        printf("[!] There's no command for given name: %s\n", command);
+        sqlite3_close(DB);
+        return EXIT_FAILURE;
+    }
+
+    char *err_msg = 0;
+    char *sql_command = sqlite3_mprintf("DELETE FROM examples WHERE id = %d AND command_id = %d;", example_id, command_id);
+
+    // create command
+    int rc = sqlite3_exec(DB, sql_command, 0, 0, &err_msg);
+    if (rc != SQLITE_OK)
+    {
+        exec_db_error(err_msg);
+    }
+    int last_id = sqlite3_last_insert_rowid(DB);
+    printf("[*] Example n_%d succesfully deleted for command: %s\n", example_id, command);
+    sqlite3_close(DB);
+}
+
+/**
+ * In the main this function starts the logic to add a new command into memory commands db.
+ * It prompts user for a command, example and comment
+ * */
+int new_command(int argc, char *command)
+{
+    char example[200];
+    char comment[200];
+
+    int command_id = insert_command(command);
+
+    printf("Command line usage example: ");
+    gets(example);
+
+    printf("Comment: ");
+    gets(comment);
+
+    return insert_example(example, comment, command_id);
+}
+
+/**
  * Show informations about a COMMAND
  * */
 int show(int argc, char *command)
@@ -301,16 +385,20 @@ int cancel(int argc, char *command, int example_id)
 {
     if (argc == 2)
     {
-        printf("Specify a COMMAND to delete and optionally a -i ID for the example\n");
+        printf("[*] Specify a COMMAND to delete and optionally a -i ID for the example\n");
         return EXIT_SUCCESS;
     }
-    if (example_id == NULL)
+    if (example_id == -1)
     {
-        printf("[*] Deleting command and all examples: %s", command);
+        printf("[*] Deleting command and all examples: %s\n", command);
+        delete_command(command);
+        return EXIT_SUCCESS;
     }
     else
     {
-        printf("[*] Deleting example number %d for command %s", example_id, command);
+        printf("[*] Deleting example number %d for command %s\n", example_id, command);
+        delete_command_example(command, example_id);
+        return EXIT_SUCCESS;
     }
 }
 

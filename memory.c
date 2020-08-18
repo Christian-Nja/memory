@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     struct arguments arguments;
 
     // default arguments
-    arguments.id = NULL;
+    arguments.id = -1;
 
     /***
      ***    ARGP PARSER
@@ -85,7 +85,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
     switch (key)
     {
     case 'i':
-        arguments->id = atoi(key);
+        arguments->id = atoi(arg);
         break;
     case ARGP_KEY_ARG:
         if (state->arg_num > 1)
