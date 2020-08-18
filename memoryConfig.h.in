@@ -1,0 +1,3 @@
+// the configured options and settings for memory
+#define memory_VERSION_MAJOR @memory_VERSION_MAJOR @
+#define memory_VERSION_MINOR @memory_VERSION_MINOR @

@@ -1,0 +1,40 @@
+*####################*
+#           __       #
+#  /\/\   /_   /\/\  #
+# /    \ /__  /    \ #
+#                    #
+*####################*
+
+Given a command program asks for a using example and a comment
+You can query program for command usings
+You can delete or modify command and command example
+
+Tables:
+
+|  commands  |
+| id  | name |
+
+|  examples  |
+| id | cmd_id | example | comment |
+
+2) add git init
+3) show all ordered list of commands (if no one is specified)
+4) delete command 
+5) search commands and search keywords in comments
+
+6) correct INSTALLATION PASSES
+
+executable in /usr/bin
+package in /opt (shared libraries, header files ...)
+data in /home/<user>/.memory/commands.db  (determine username at runtime)
+
+add mkdir /home/<user>/.memory in installation file
+
+7) modify command
+
+new functionality) TODO table
+|  todos  |
+
+some links:
+
+https://stackoverflow.com/questions/31146713/sqlite3-exec-callback-function-clarification
