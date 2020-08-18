@@ -46,7 +46,9 @@ static char args_doc[] = "db\t\t\t\tinitialize the db in ~/.memory folder\n"
  ***                        print by --help
  ***/
 static struct argp_option options[] = {
-    {"id", 'i', "ID", 0, "specify a command id or example id"}, {0}};
+    {"id", 'i', "ID", 0, "specify a command id or example id"},
+    {"key", 'k', "KEYWORD", 0, "search commands or examples matching the keyword"},
+    {0}};
 
 /***
  ***    ARGUMENTS           used by main to communicate
@@ -55,6 +57,7 @@ static struct argp_option options[] = {
 struct arguments
 {
     int id;
+    char key[40];  // TODO: control the buffer overflow
     char *args[1]; /* db | new | show | delete */
 };
 

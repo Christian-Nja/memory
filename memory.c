@@ -21,9 +21,11 @@ const char *DELETE = "delete";
 int main(int argc, char *argv[])
 {
     struct arguments arguments;
+    const char *MATCH_ALL_KEYWORD = "\x25"; //%
 
     // default arguments
     arguments.id = -1;
+    strcpy(arguments.key, MATCH_ALL_KEYWORD);
 
     /***
      ***    ARGP PARSER
@@ -56,7 +58,7 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(arguments.args[0], SHOW) == 0)
     {
-        return show(argc, arguments.args[1]);
+        return show(argc, arguments.args[1], arguments.key);
     }
     else if (strcmp(arguments.args[0], DELETE) == 0)
     {
@@ -86,6 +88,11 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
     {
     case 'i':
         arguments->id = atoi(arg);
+        break;
+    case 'k':
+        strcpy(arguments->key, "%");
+        strcat(arguments->key, arg); //TODO check for keyword to avoid bufferoverflow
+        strcat(arguments->key, "%");
         break;
     case ARGP_KEY_ARG:
         if (state->arg_num > 1)

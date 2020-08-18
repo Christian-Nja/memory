@@ -25,7 +25,7 @@ int open_db_connection()
     if (rc != SQLITE_OK)
     {
 
-        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(DB));
+        fprintf(stderr, "[!] Cannot open database: %s\n", sqlite3_errmsg(DB));
         sqlite3_close(DB);
 
         exit(EXIT_FAILURE);
@@ -39,7 +39,7 @@ int open_db_connection()
 int exec_db_error(char *err_msg)
 {
 
-    fprintf(stderr, "SQL error [commands]: %s\n", err_msg);
+    fprintf(stderr, "[!] SQL error [commands]: %s\n", err_msg);
 
     sqlite3_free(err_msg);
     sqlite3_close(DB);
@@ -52,7 +52,7 @@ int exec_db_error(char *err_msg)
  * */
 int prepare_db_error()
 {
-    fprintf(stderr, "%s: %s\n", "Failure fetching data: ", sqlite3_errmsg(DB));
+    fprintf(stderr, "[!] %s: %s\n", "Failure fetching data: ", sqlite3_errmsg(DB));
     sqlite3_close(DB);
     exit(EXIT_FAILURE);
 }
@@ -62,7 +62,7 @@ int prepare_db_error()
  * */
 int stmt_db_error(sqlite3_stmt *stmt)
 {
-    printf("Execution failed: %s", sqlite3_errmsg(DB));
+    printf("[!] Execution failed: %s", sqlite3_errmsg(DB));
     sqlite3_finalize(stmt);
     sqlite3_close(DB);
     exit(EXIT_FAILURE);
@@ -89,6 +89,7 @@ int create_db_tables()
                                       " command_id INTEGER NOT NULL, "
                                       " FOREIGN KEY (command_id) REFERENCES commands(id) );";
 
+    printf("[*] Creating commands db in %s\n", DB_PATH);
     // create commands
     int rc = sqlite3_exec(DB, sql_commands_and_examples, 0, 0, &err_msg);
 
@@ -97,6 +98,7 @@ int create_db_tables()
         exec_db_error(err_msg);
     }
 
+    printf("[*] db succesfully created\n[!] Nothing happens if db already exists\n");
     sqlite3_close(DB);
 
     return EXIT_SUCCESS;
@@ -202,13 +204,14 @@ int insert_example(char *example, char *comment, int command_id)
 
     sqlite3_finalize(stmt);
     sqlite3_close(DB);
+    printf("[*] New command example saved\n");
     return EXIT_SUCCESS;
 }
 
 /**
- * Selects all usage example for a COMMAND
+ * Selects all usage example for a COMMAND optionally filtered by KEYWORD
  * */
-int select_all_examples(char *command)
+int select_all_examples(char *command, char *keyword)
 {
 
     // open connection
@@ -216,10 +219,11 @@ int select_all_examples(char *command)
 
     sqlite3_stmt *stmt;
     char *sql_command = "SELECT id, example, comment    "
-                        "FROM examples WHERE command_id "
+                        "FROM examples WHERE  command_id "
                         "IN "
                         "  (  SELECT id FROM commands   "
-                        "     WHERE name = (?)     );   ";
+                        "     WHERE name = ?1     )   "
+                        "AND (LIKE(?2,comment)) ;        ";
 
     int rc = sqlite3_prepare_v2(DB, sql_command, -1, &stmt, NULL);
 
@@ -229,20 +233,21 @@ int select_all_examples(char *command)
     }
 
     sqlite3_bind_text(stmt, 1, command, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, keyword, -1, SQLITE_STATIC);
 
-    printf("\n %s \n\n", command);
+    printf("\n %s\n\n", command);
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     {
+
         int id = sqlite3_column_int(stmt, 0);
         const unsigned char *example = sqlite3_column_text(stmt, 1);
         const unsigned char *comment = sqlite3_column_text(stmt, 2);
-        printf(" %d) Usage: %s\n\n    Comment: %s\t\t\n", id, example, comment);
-        printf("\n*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=\n\n");
+        printf("%-6d%-50s%s\n", id, example, comment);
     }
 
     if (rc != SQLITE_DONE)
     {
-        printf("error: %s", sqlite3_errmsg(DB));
+        printf("[!] error: %s", sqlite3_errmsg(DB));
     }
     sqlite3_finalize(stmt);
 
@@ -255,6 +260,7 @@ int select_all_examples(char *command)
  * */
 int select_all_commands()
 {
+
     open_db_connection();
 
     // prepare stmt
@@ -274,7 +280,51 @@ int select_all_commands()
 
     if (rc != SQLITE_DONE)
     {
-        printf("error: %s", sqlite3_errmsg(DB));
+        printf("[!] error: %s", sqlite3_errmsg(DB));
+    }
+    sqlite3_finalize(stmt);
+
+    sqlite3_close(DB);
+    return EXIT_SUCCESS;
+}
+
+/**
+ * Returns possible interesting commands whose comments or examples match a keyword
+ * */
+int select_commands_by_keyword(char *keyword)
+{
+    open_db_connection();
+
+    // prepare stmt
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(DB, "SELECT commands.name, examples.example, examples.comment "
+                                    "FROM ( examples LEFT JOIN commands "
+                                    "ON examples.command_id = commands.id )"
+                                    "WHERE ( examples.comment LIKE ?1"
+                                    "   OR examples.example LIKE ?2 )"
+                                    "ORDER BY commands.name ASC ; ",
+                                -1, &stmt, 0);
+    if (rc != SQLITE_OK)
+    {
+        prepare_db_error();
+    }
+
+    //bind values to parameters
+    sqlite3_bind_text(stmt, 1, keyword, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, keyword, -1, SQLITE_STATIC);
+
+    // run sql and iterate through results
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        const unsigned char *command = sqlite3_column_text(stmt, 0);
+        const unsigned char *example = sqlite3_column_text(stmt, 1);
+        const unsigned char *comment = sqlite3_column_text(stmt, 2);
+        printf("%-15s%-40s%s\n", command, example, comment);
+    }
+
+    if (rc != SQLITE_DONE)
+    {
+        printf("[!] error: %s", sqlite3_errmsg(DB));
     }
     sqlite3_finalize(stmt);
 
@@ -342,7 +392,7 @@ int delete_command_example(char *command, int example_id)
         exec_db_error(err_msg);
     }
     int last_id = sqlite3_last_insert_rowid(DB);
-    printf("[*] Example n_%d succesfully deleted for command: %s\n", example_id, command);
+    printf("[*] Example number %d succesfully deleted for command: %s\n", example_id, command);
     sqlite3_close(DB);
 }
 
@@ -369,13 +419,20 @@ int new_command(int argc, char *command)
 /**
  * Show informations about a COMMAND
  * */
-int show(int argc, char *command)
+int show(int argc, char *command, char *keyword)
 {
-    if (argc == 2)
+    if (argc == 2) // memory show
     {
+        printf("[*] displaying all commands\n");
         return select_all_commands();
+    } // memory show -k keyword
+    else if (argc == 4)
+    {
+        printf("\n[*] searching possible results for keyword:\t%s\n\n", keyword);
+        return select_commands_by_keyword(keyword);
     }
-    return select_all_examples(command);
+    else // memory show command || memory show command -k keyword  argc == 3 || 5
+        return select_all_examples(command, keyword);
 }
 
 /**

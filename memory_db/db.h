@@ -21,7 +21,7 @@ int insert_example(char *example, char *comment, int command_id);
 /**
  * Selects all usage example for a COMMAND
  * */
-int select_all_examples(char *command);
+int select_all_examples(char *command, char *keyword);
 
 /**
  * Returns ordered list of memorized commands 
@@ -40,9 +40,9 @@ int new_command(int argc, char *command);
 int initialize_db();
 
 /**
- * Show informations about a COMMAND
+ * Show informations about a COMMAND filtering by KEYWORD
  * */
-int show(int argc, char *command);
+int show(int argc, char *command, char *keyword);
 
 /**
  * Delete a COMMAND and all related examples or delete example by ID for given COMMAND
