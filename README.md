@@ -30,7 +30,7 @@ vscode
 
 ```
 
-Nothing can stop you to name a command TODO and hack the program to memorize notes.
+Nothing can stop you to name a command _todo_ and hack the program to memorize notes.
 
 ## USAGE
 
@@ -40,11 +40,11 @@ Nothing can stop you to name a command TODO and hack the program to memorize not
 
 `$ memory new <command>` Asks for an example and a comment to type
 
-`$ memory show` Lists all the command available
+`$ memory show` Lists all the available commands
 
-`$ memory show <command>` Lists all the example for the command
+`$ memory show <command>` Lists all the examples for the command
 
-`$ memory show -k <keyword>` Lists all the commands and examples that match the query in the example or in the comment
+`$ memory show -k <keyword>` Lists all the commands and examples matching the query in the example or in the comment
 
 ## INSTALLATION
 
@@ -58,10 +58,9 @@ You'll need to work a bit to install the program as it is in a raw version yet.
 You will find the executable inside the folder:
 run `$ ./memory --help`
 
-Alternatively you can create a debian package running inside the build folder with
+Alternatively you can create a debian package running inside the build folder
 `$ cpack`
-and install it with `$ dpkg -i <memory_deb_package>`
-Check the CMakeLists.txt files to change the folders where the libraries, object files, exec... will be installed.
+and installing it with `$ dpkg -i <memory_deb_package>`
 
 ** ATTENTION **
 You still need to manually change the path to command db.
